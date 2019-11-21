@@ -93,6 +93,8 @@ namespace 解释器构造实践
             return false;
         }
         int errorcount = 0;
+
+
         private bool throwErr(String error)
         {
             //错误栈
@@ -110,7 +112,6 @@ namespace 解释器构造实践
 
         private bool throwWarning(int start, int length,String warning)
         {
-
             //错误栈
             errorinfo = 
                 "警告！！！：" + "位置index：" + index 
@@ -411,6 +412,7 @@ namespace 解释器构造实践
             }
             else windBack(position);
 
+            //throwErr("语句错误");
             return false;
         }
 
@@ -789,12 +791,9 @@ namespace 解释器构造实践
 
         //赋值语句
         private bool AssignmentSentence(MyNode uppernode)
-        {/*<赋值语句>-><标志符> = <赋值语句>xxxxx
-                        |<标志符> =<标志符>xxxxx
-                        |<标志符> = <算术表达式>
+        {/*<赋值语句>-><标志符> = <算术表达式>
                         |<标志符> = <逻辑表达式>
-                        |<标识符> = <自增减>
-                        |<标志符> = <常数>xxxxx*/
+                        |<标识符> = <自增减>*/
 
             MyNode node = new MyNode("赋值语句");
             int position = index;
@@ -1572,15 +1571,20 @@ namespace 解释器构造实践
             int subposition = index;
             if(!MathematicExpression(node))
             {
-                  
-                if(peek()!=")")
+                windBack(subposition);
+                if(!Array(node))
                 {
-                    //参数为逻辑表达式
-                    if (!LogicExpression(node))
-                        return throwErr("函数形参错误");
+                    windBack(subposition);
+                    if (peek() != ")")
+                    {
+                        //参数为逻辑表达式
+                        if (!LogicExpression(node))
+                            return throwErr("函数形参错误");
+                    }
+                    //无参数
                 }
-                //无参数 
             }
+           
             if (!Sign(node,")"))
             {
                 throwErr("函数调用缺少)");
@@ -1588,7 +1592,6 @@ namespace 解释器构造实践
             }
             uppernode.AddNode(node);
             return true;
-
         }
 
 

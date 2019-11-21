@@ -1,852 +1,854 @@
 ﻿
-//        Form1 form;
-//        String token = "";
-//        int type = 999;
-//        int index = 0;
-//        String errorinfo = "";
-//        MyNode mainNode;
-//        //词法分析结果
-//        List<TokenInfo> tokeninfos;
-//        TreeView tree;
-//        TreeNode rootnode;
+//Form1 form;
+//String token = "";
+//int type = 999;
+//int index = 0;
+//String errorinfo = "";
+//MyNode mainNode;
+////词法分析结果
+//List<TokenInfo> tokeninfos;
+//TreeView tree;
+//TreeNode rootnode;
 
 
-//        GrammarParse(Form1 form)
+//GrammarParse(Form1 form)
+//{
+//    this.form = form;
+//    tokeninfos = form.tokeninfos;
+//    tree = form.treeview;
+//}
+
+//void print(MyNode node, String space, bool indicator)
+//{
+
+
+//    String nowspace;
+//    if (indicator)
+//        nowspace = "     ";
+//    else
+//        nowspace = space;
+//    if (node.leaf)
+//        Console.WriteLine(nowspace + node.gettoken());
+
+//    if (!node.leaf)
+
+//    {
+//        Console.Write(nowspace + node.info);
+
+//        foreach (MyNode subnode in node.nodes)
 //        {
-//            this.form = form;
-//            tokeninfos = form.tokeninfos;
-//            tree = form.treeview;
-//        }
-
-//        void print(MyNode node, String space, bool indicator)
-//        {
-
-
-//            String nowspace;
-//            if (indicator)
-//                nowspace = "     ";
+//            if (subnode == node.nodes[0])
+//                indicator = true;
 //            else
-//                nowspace = space;
-//            if (node.leaf)
-//                Console.WriteLine(nowspace + node.gettoken());
-
-//            if (!node.leaf)
-
-//            {
-//                Console.Write(nowspace + node.info);
-
-//                foreach (MyNode subnode in node.nodes)
-//                {
-//                    if (subnode == node.nodes[0])
-//                        indicator = true;
-//                    else
-//                        indicator = false;
-//                    print(subnode, space + "     ", indicator);
-//                    //print(subnode, space + "   ");
-//                }
-//            }
+//                indicator = false;
+//            print(subnode, space + "     ", indicator);
+//            //print(subnode, space + "   ");
 //        }
+//    }
+//}
 
-//        void grammarParse()
+//void grammarParse()
+//{
+
+//}
+////！！！！！！！！！！！！！！！！！
+////将词法分析的结果保存到数组中，以供回退方便
+////消除文法二义性，进入一个子分支，第一个符号判断正确则表示一定是该状态，在第二个状态就可以报错！！！
+////获取下一个token
+
+////上层也要抛出错误，以供检查
+//String getnext()
+//{
+//    //更新index
+//    //更新token
+//    //更新type
+//    if (index >= tokeninfos.Count())
+//    {
+//        Console.WriteLine("到达程序终点");
+//        return "!!!!!";
+//    }
+//    token = tokeninfos[index].token;
+//    type = tokeninfos[index].type;
+//    //此时指向下一个token
+//    index++;
+//    return token;
+//}
+
+//bool windBack(int position)
+//{
+//    index = position;
+//    token = "";
+//    type = 9999;
+//    return false;
+//}
+//int errorcount = 0;
+//bool throwErr(String error)
+//{
+//    //错误栈
+//    errorinfo = "位置index：" + index + "token：" + token + " , 错误信息：" + error + '\n';
+//    if (errorcount == 0)
+//        form.highlightError(
+//        tokeninfos[index - 1].stringindex,
+//        tokeninfos[index - 1].token.Length,
+//        Color.LightSkyBlue,
+//        true);
+//    errorcount++;
+//    form.label2.Text += errorinfo;
+//    return false;
+//}
+
+//bool throwWarning(int start, int length, String warning)
+//{
+
+//    //错误栈
+//    errorinfo =
+//        "警告！！！：" + "位置index：" + index
+//        + "token：" + token + "警告信息：" + warning + '\n';
+
+//    if (errorcount == 0) form.highlightError(start, length, Color.LightGoldenrodYellow, true);
+//    form.label2.Text += errorinfo;
+//    return false;
+//}
+
+
+
+////常数
+//bool Constant(MyNode uppernode)
+//{
+//    getnext();
+//    MyNode node = new MyNode("常数");
+//    MyNode leafnode = new MyNode("token");
+
+//    if (type == 20 + form.signAddress)
+//    {
+//        leafnode.leaf = true;
+//        leafnode.settoken(token);
+//        leafnode.type = type;
+//        node.AddNode(leafnode);// node.nodes.Add(leafnode);
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    return false;
+//}
+
+
+
+
+////符号和保留字！！！！！！！！！！！
+//bool Sign(MyNode uppernode, String temp)
+//{
+//    getnext();
+//    MyNode node = new MyNode(temp);
+
+//    if (token == temp)
+//    {
+//        node.leaf = true;
+//        node.type = type;
+//        node.settoken(token);
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else return false;
+//}
+
+
+////程序
+//bool Programe()
+//{//<程序>-><函数定义> #
+// //初始化最顶结点
+//    mainNode = new MyNode("程序");
+//    MyNode node = mainNode;
+
+//    rootnode = new TreeNode("程序");
+//    mainNode.treenode = rootnode;
+//    tree.Nodes.Add(rootnode);
+//    int position = index;
+//    //<函数定义>
+//    if (!FunctionDefinition(node)) return false;
+//    position = index;
+//    while (FunctionDefinition(node))
+//    {
+//        position = index;
+//    }
+//    windBack(position);
+//    if (Sign(node, "#"))
+//    {//遇到#终止符，程序结束
+//     //TODO
+//     //  print(mainNode, "",true);
+//     // tree.Nodes.Add(rootnode);
+//        tree.ExpandAll();
+
+//        return true;
+//    }
+//    //没遇到终止符，即有多余符号
+//    throwErr("函数定义外部有多余符号");
+//    //print(mainNode, "",true);
+
+//    //tree.Nodes.Add(rootnode);
+//    tree.ExpandAll();
+//    return false;
+//}
+
+
+////函数定义
+//bool FunctionDefinition(MyNode uppernode)
+//{//<函数定义>-><类型><标志符>(<形参>)<语句列表>
+// //建立自己的结点
+//    MyNode node = new MyNode("函数定义");
+//    int position = index;
+//    if (!Type(node))
+//    {
+//        throwErr("FunctionDefinition：函数定义缺少类别定义");
+
+//        return windBack(position);
+//    }
+//    if (!Marker(node))//缺少标志符
+//    {
+//        throwErr("FunctionDefinition：函数定义缺少标志符");
+//        return windBack(position);
+//    }
+//    if (!Sign(node, "("))
+//    {
+//        //缺少括号
+//        throwErr("FunctionDefinition：函数定义缺少(");
+//        return windBack(position);
+
+//    }
+//    if (!FormalParameter(node))//缺少......
+//    {
+//        throwErr("FunctionDefinition：函数定义缺少形参");
+//        return windBack(position);
+//    }
+//    if (!Sign(node, ")"))
+//    {
+//        throwErr("FunctionDefinition：函数定义缺少)   ");
+//        return windBack(position);
+//    }
+//    //if (!SentenceList(node))
+//    if (!CompoundSentence(node))
+//    {
+//        throwErr("FunctionDefinition：函数定义缺少语句");
+//        return windBack(position);
+//    }
+//    //当所有的子树都成功后才将自己连上父节点
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    int a = ---position;
+//    return true;
+//}
+
+////类型
+//bool Type(MyNode uppernode)
+//{//类型
+//    MyNode node = new MyNode("类型");
+//    MyNode leafnode = new MyNode("token");
+//    leafnode.leaf = true;
+
+//    bool indicator = false;
+//    switch (getnext())
+//    {
+//        case "int":
+//            indicator = true;
+//            break;
+//        case "float":
+//            indicator = true;
+//            break;
+//        case "bool":
+//            indicator = true;
+//            break;
+//        default:
+//            indicator = false;
+//            break;
+//    }
+//    if (indicator)
+//    {//是类型
+//        leafnode.settoken(token);
+//        leafnode.type = type;
+//        node.AddNode(leafnode);//node.nodes.Add(leafnode);
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    return false;
+//}
+
+
+////标志符
+//bool Marker(MyNode uppernode)
+//{//标志符
+//    int position = index;
+//    MyNode node = new MyNode("标志符");
+//    MyNode leafnode = new MyNode("token");
+//    getnext();
+//    if (type == 21 + form.signAddress)
+//    {
+//        leafnode.leaf = true;
+//        leafnode.type = type;
+//        leafnode.settoken(token);
+//        node.AddNode(leafnode);//node.nodes.Add(leafnode);
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else
+//        return windBack(position);
+//}
+
+////形参
+//bool FormalParameter(MyNode uppernode)
+//{//<形参>-><类型><标志符> 
+//    MyNode node = new MyNode("形参");
+//    int position = index;
+//    //<形参>-><类型><标志符>
+//    if (!Type(node))
+//    {
+//        node.leaf = true;
+//        windBack(position);
+//        return true;
+//    }
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//                            //！！！！！！！！！！！！！！！！！！！！！！多形参？？？？？函数调用？？？？？？
+//    if (!Marker(uppernode))
+//    {
+//        //缺少括号
+//        throwErr("FormalParameter：形参缺少标志符");
+//        return windBack(position);
+
+//    }
+//    return true;
+//}
+
+////bool FormalParameter2(Node uppernode)
+////{
+////    Node node = new Node("形参")
+////}
+
+////语句列表
+//bool SentenceList(MyNode uppernode)
+//{//< 语句列表 >->< 语句 > | < 语句  ><语句列表 >
+//    MyNode node = new MyNode("语句列表");
+//    int position = index;
+//    if (!Sentence(node)) return windBack(position);
+
+//    //保存当前位置以供回退使用
+//    position = index;
+//    if (!SentenceList(node))
+//    {//不再右递归
+//     //回退位置
+//        windBack(position);
+//    }
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
+
+
+////语句
+//bool Sentence(MyNode uppernode)
+//{//<语句>-> <复合语句> | <表达式语句> | <条件语句> | <循环语句>
+//    MyNode node = new MyNode("语句");
+//    int position = index;
+//    if (CompoundSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(position);
+
+//    if (ExpressionSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(position);
+
+//    if (ConditionSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(position);
+
+//    if (LoopSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(position);
+
+//    return false;
+//}
+
+////复合语句
+//bool CompoundSentence(MyNode uppernode)
+//{//<复合语句>->{<语句列表> }
+//    MyNode node = new MyNode("复合语句");
+//    int position = index;
+//    if (!Sign(node, "{"))//读入一个括号后就直接进入了复合语句的状态，没有其他状态可以接收括号
+//        return windBack(position);
+
+//    if (!SentenceList(node))
+//    {
+//        //先检查是否为空
+//        if (peek() == "}")
+//        {//说明复合语句为空
+//            Sign(node, "}");
+//            uppernode.AddNode(node);
+//            throwWarning(tokeninfos[index - 2].stringindex, tokeninfos[index - 1].stringindex + 1 - tokeninfos[index - 2].stringindex, "警告！！！：{}中为空");
+
+//            return true;
+//        }
+//        else
 //        {
-
+//            throwErr("CompoundSentence：复合语句缺少语句列表");
+//            return windBack(position);
 //        }
-//        //！！！！！！！！！！！！！！！！！
-//        //将词法分析的结果保存到数组中，以供回退方便
-//        //消除文法二义性，进入一个子分支，第一个符号判断正确则表示一定是该状态，在第二个状态就可以报错！！！
-//        //获取下一个token
 
-//        //上层也要抛出错误，以供检查
-//        String getnext()
+//    }
+
+//    if (!Sign(node, "}"))
+//    {
+//        //错误处理！！！！！！！！！！！！！！！！
+//        throwErr("CompoundSentence：复合语句缺少}");
+//        return windBack(position);
+//    }
+
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
+
+
+////表达式语句
+//bool ExpressionSentence(MyNode uppernode)
+//{//<表达式语句>-> <表达式>;|;
+//    MyNode node = new MyNode("表达式语句");
+//    int position = index;
+
+//    if (!Expression(node))
+//    {
+//        //  throwErr("ExpressionSentence：表达式语句缺少表达式");
+//        //如果当前行只有一个分号，则表示为空，不返回错误
+//        if (peek() == ";")
 //        {
-//            //更新index
-//            //更新token
-//            //更新type
-//            if (index >= tokeninfos.Count())
-//            {
-//                Console.WriteLine("到达程序终点");
-//                return "!!!!!";
-//            }
-//            token = tokeninfos[index].token;
-//            type = tokeninfos[index].type;
-//            //此时指向下一个token
-//            index++;
-//            return token;
+//            Sign(node, ";");
+//            uppernode.AddNode(node);
+//            return true;
 //        }
+//        return windBack(position);
 
-//        bool windBack(int position)
-//        {
-//            index = position;
-//            token = "";
-//            type = 9999;
-//            return false;
-//        }
-//        int errorcount = 0;
-//        bool throwErr(String error)
-//        {
-//            //错误栈
-//            errorinfo = "位置index：" + index + "token：" + token + " , 错误信息：" + error + '\n';
-//           if(errorcount==0)
-//                form.highlightError(
-//                tokeninfos[index - 1].stringindex,
-//                tokeninfos[index - 1].token.Length, 
-//                Color.LightSkyBlue,
-//                true);
-//            errorcount++;
-//            form.label2.Text += errorinfo;
-//            return false;
-//        }
-
-//        bool throwWarning(int start, int length,String warning)
-//        {
-
-//            //错误栈
-//            errorinfo = 
-//                "警告！！！：" + "位置index：" + index 
-//                + "token：" + token + "警告信息："+warning + '\n';
-
-//            if (errorcount == 0) form.highlightError(start, length,Color.LightGoldenrodYellow,true);
-//            form.label2.Text += errorinfo;
-//            return false;
-//        }
+//    }
+//    if (!Sign(node, ";"))
+//    {
+//        //错误处理！！！！！！！！！！！！！！！！
+//        throwErr("ExpressionSentence：表达式语句缺少;");
+//        return windBack(position);
+//    }
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
 
 
+////条件语句
+//bool ConditionSentence(MyNode uppernode)
+//{//< 条件语句 >->if (< 逻辑表达式 >) < 语句 > < elseif >
+//    MyNode node = new MyNode("条件语句");
+//    int position = index;
+//    if (!Sign(node, "if"))
+//        return windBack(position);
+//    if (!Sign(node, "("))
+//    {
+//        //报错
+//        throwErr("ConditionSentence：if语句中缺少(");
+//        return windBack(position);
+//    }
+//    if (!LogicExpression(node))
+//    {
+//        throwErr("ConditionSentence：if语句中缺少逻辑表达式");
+//        return windBack(position);
 
-//        //常数
-//        bool Constant(MyNode uppernode)
-//        {
-//            getnext();
-//            MyNode node = new MyNode("常数");
-//            MyNode leafnode = new MyNode("token");
+//    }
+//    if (!Sign(node, ")"))
+//    {
+//        //报错
+//        throwErr("ConditionSentence：if语句中缺少)");
+//        return windBack(position);
+//    }
+//    if (!Sentence(node))
+//    {
+//        throwErr("ConditionSentence：if语句缺少语句");
+//        return windBack(position);
+//    }
 
-//            if (type == 20 + form.signAddress)
-//            {
-//                leafnode.leaf = true;
-//                leafnode.settoken(token);
-//                leafnode.type = type;
-//                node.AddNode(leafnode);// node.nodes.Add(leafnode);
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            return false;
-//        }
+//    position = index;
+//    if (!ElseIf(node))
+//    {
+//        windBack(position);
+//    }
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
+////elseif
+//bool ElseIf(MyNode uppernode)
+//{//<elseif>-> else <语句> | 空
+//    MyNode node = new MyNode("ElseIf");
+//    int position = index;
 
+//    if (!Sign(node, "else"))
+//        return windBack(position);
 
+//    if (!Sentence(node))
+//    {
+//        //报错
+//        throwErr("ConsitionSentence：else分支中缺少语句");
+//        return windBack(position);
+//    }
 
-
-//        //符号和保留字！！！！！！！！！！！
-//        bool Sign(MyNode uppernode, String temp)
-//        {
-//            getnext();
-//            MyNode node = new MyNode(temp);
-
-//            if (token == temp)
-//            {
-//                node.leaf = true;
-//                node.type = type;
-//                node.settoken(token);
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else return false;
-//        }
-
-
-//        //程序
-//        bool Programe()
-//        {//<程序>-><函数定义> #
-//            //初始化最顶结点
-//            mainNode = new MyNode("程序");
-//            MyNode node = mainNode;
-
-//            rootnode = new TreeNode("程序");
-//            mainNode.treenode = rootnode;
-//            tree.Nodes.Add(rootnode);
-//            int position = index;
-//            //<函数定义>
-//            if (!FunctionDefinition(node)) return false;
-//            position = index;
-//            while(FunctionDefinition(node))
-//            {
-//                position = index;
-//            }
-//            windBack(position);
-//            if (Sign(node, "#"))
-//            {//遇到#终止符，程序结束
-//             //TODO
-//             //  print(mainNode, "",true);
-//             // tree.Nodes.Add(rootnode);
-//                tree.ExpandAll();
-
-//                return true;
-//            }
-//            //没遇到终止符，即有多余符号
-//            throwErr("函数定义外部有多余符号");
-//            //print(mainNode, "",true);
-
-//            //tree.Nodes.Add(rootnode);
-//            tree.ExpandAll();
-//            return false;
-//        }
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
 
 
-//        //函数定义
-//        bool FunctionDefinition(MyNode uppernode)
-//        {//<函数定义>-><类型><标志符>(<形参>)<语句列表>
-//            //建立自己的结点
-//            MyNode node = new MyNode("函数定义");
-//            int position = index;
-//            if (!Type(node))
-//            {
-//                throwErr("FunctionDefinition：函数定义缺少类别定义");
-                
+
+
+////循环语句
+//bool LoopSentence(MyNode uppernode)
+//{//<循环语句>->while(<逻辑表达式>)<语句>
+
+//    MyNode node = new MyNode("循环语句");
+//    int position = index;
+
+//    switch (peek())
+//    {
+//        case "while":
+//            if (!Sign(node, "while"))
 //                return windBack(position);
-//            }
-//            if (!Marker(node))//缺少标志符
-//            {
-//                throwErr("FunctionDefinition：函数定义缺少标志符");
-//                return windBack(position);
-//            }
 //            if (!Sign(node, "("))
 //            {
-//                //缺少括号
-//                throwErr("FunctionDefinition：函数定义缺少(");
-//                return windBack(position);
-
-//            }
-//            if (!FormalParameter(node))//缺少......
-//            {
-//                throwErr("FunctionDefinition：函数定义缺少形参");
-//                return windBack(position);
-//            }
-//            if (!Sign(node, ")"))
-//            {
-//                throwErr("FunctionDefinition：函数定义缺少)   ");
-//                return windBack(position);
-//            }
-//            //if (!SentenceList(node))
-//            if (!CompoundSentence(node))
-//            {
-//                throwErr("FunctionDefinition：函数定义缺少语句");
-//                return windBack(position);
-//            }
-//            //当所有的子树都成功后才将自己连上父节点
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            int a = - --position;
-//            return true;
-//        }
-
-//        //类型
-//        bool Type(MyNode uppernode)
-//        {//类型
-//            MyNode node = new MyNode("类型");
-//            MyNode leafnode = new MyNode("token");
-//            leafnode.leaf = true;
-
-//            bool indicator = false;
-//            switch (getnext())
-//            {
-//                case "int":
-//                    indicator = true;
-//                    break;
-//                case "float":
-//                    indicator = true;
-//                    break;
-//                case "bool":
-//                    indicator = true;
-//                    break;
-//                default:
-//                    indicator = false;
-//                    break;
-//            }
-//            if (indicator)
-//            {//是类型
-//                leafnode.settoken(token);
-//                leafnode.type = type;
-//                node.AddNode(leafnode);//node.nodes.Add(leafnode);
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            return false;
-//        }
-
-
-//        //标志符
-//        bool Marker(MyNode uppernode)
-//        {//标志符
-//            int position = index;
-//            MyNode node = new MyNode("标志符");
-//            MyNode leafnode = new MyNode("token");
-//            getnext();
-//            if (type == 21 + form.signAddress)
-//            {
-//                leafnode.leaf = true;
-//                leafnode.type = type;
-//                leafnode.settoken(token);
-//                node.AddNode(leafnode);//node.nodes.Add(leafnode);
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else
-//                return windBack(position);
-//        }
-
-//        //形参
-//        bool FormalParameter(MyNode uppernode)
-//        {//<形参>-><类型><标志符> 
-//            MyNode node = new MyNode("形参");
-//            int position = index;
-//            //<形参>-><类型><标志符>
-//            if (!Type(node))
-//            {
-//                node.leaf = true;
-//                windBack(position);
-//                return true;
-//            }
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            //！！！！！！！！！！！！！！！！！！！！！！多形参？？？？？函数调用？？？？？？
-//            if (!Marker(uppernode))
-//            {
-//                //缺少括号
-//                throwErr("FormalParameter：形参缺少标志符");
-//                return windBack(position);
-
-//            }
-//            return true;
-//        }
-
-//        //bool FormalParameter2(Node uppernode)
-//        //{
-//        //    Node node = new Node("形参")
-//        //}
-
-//        //语句列表
-//        bool SentenceList(MyNode uppernode)
-//        {//< 语句列表 >->< 语句 > | < 语句  ><语句列表 >
-//            MyNode node = new MyNode("语句列表");
-//            int position = index;
-//            if (!Sentence(node)) return windBack(position);
-
-//            //保存当前位置以供回退使用
-//            position = index;
-//            if (!SentenceList(node))
-//            {//不再右递归
-//                //回退位置
-//                windBack(position);
-//            }
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            return true;
-//        }
-
-
-//        //语句
-//        bool Sentence(MyNode uppernode)
-//        {//<语句>-> <复合语句> | <表达式语句> | <条件语句> | <循环语句>
-//            MyNode node = new MyNode("语句");
-//            int position = index;
-//            if (CompoundSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(position);
-
-//            if (ExpressionSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(position);
-
-//            if (ConditionSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(position);
-
-//            if (LoopSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(position);
-
-//            return false;
-//        }
-
-//        //复合语句
-//        bool CompoundSentence(MyNode uppernode)
-//        {//<复合语句>->{<语句列表> }
-//            MyNode node = new MyNode("复合语句");
-//            int position = index;
-//            if (!Sign(node, "{"))//读入一个括号后就直接进入了复合语句的状态，没有其他状态可以接收括号
-//                return windBack(position);
-
-//            if (!SentenceList(node))
-//            {
-//                //先检查是否为空
-//                if (peek() == "}")
-//                {//说明复合语句为空
-//                    Sign(node, "}");
-//                    uppernode.AddNode(node);
-//                    throwWarning(tokeninfos[index - 2].stringindex, tokeninfos[index - 1].stringindex + 1 - tokeninfos[index - 2].stringindex,"警告！！！：{}中为空");
-
-//                    return true;
-//                }
-//                else
-//                {throwErr("CompoundSentence：复合语句缺少语句列表");
-//                return windBack(position);
-//                }
-                
-//            }
-
-//            if (!Sign(node, "}"))
-//            {
-//                //错误处理！！！！！！！！！！！！！！！！
-//                throwErr("CompoundSentence：复合语句缺少}");
-//                return windBack(position);
-//            }
-
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            return true;
-//        }
-
-
-//        //表达式语句
-//        bool ExpressionSentence(MyNode uppernode)
-//        {//<表达式语句>-> <表达式>;|;
-//            MyNode node = new MyNode("表达式语句");
-//            int position = index;
-
-//            if (!Expression(node))
-//            {
-//                //  throwErr("ExpressionSentence：表达式语句缺少表达式");
-//                //如果当前行只有一个分号，则表示为空，不返回错误
-//                if(peek()==";")
-//                {
-//                    Sign(node, ";");
-//                    uppernode.AddNode(node);
-//                    return true;
-//                }
-//                return windBack(position);
-
-//            }
-//            if (!Sign(node, ";"))
-//            {
-//                //错误处理！！！！！！！！！！！！！！！！
-//                throwErr("ExpressionSentence：表达式语句缺少;");
-//                return windBack(position);
-//            }
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            return true;
-//        }
-
-
-//        //条件语句
-//        bool ConditionSentence(MyNode uppernode)
-//        {//< 条件语句 >->if (< 逻辑表达式 >) < 语句 > < elseif >
-//            MyNode node = new MyNode("条件语句");
-//            int position = index;
-//            if (!Sign(node, "if"))
-//                return windBack(position);
-//            if (!Sign(node, "("))
-//            {
-//                //报错
-//                throwErr("ConditionSentence：if语句中缺少(");
+//                throwErr("while循环中缺少(");
 //                return windBack(position);
 //            }
 //            if (!LogicExpression(node))
 //            {
-//                throwErr("ConditionSentence：if语句中缺少逻辑表达式");
-//                return windBack(position);
+//                throwErr("while循环中缺少语句");
 
+//                return windBack(position);
 //            }
 //            if (!Sign(node, ")"))
 //            {
-//                //报错
-//                throwErr("ConditionSentence：if语句中缺少)");
+//                throwErr("while循环中缺少)");
 //                return windBack(position);
 //            }
 //            if (!Sentence(node))
 //            {
-//                throwErr("ConditionSentence：if语句缺少语句");
-//                return windBack(position);
-//            }
-
-//            position = index;
-//            if (!ElseIf(node))
-//            {
-//                windBack(position);
-//            }
-//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            return true;
-//        }
-//        //elseif
-//        bool ElseIf(MyNode uppernode)
-//        {//<elseif>-> else <语句> | 空
-//            MyNode node = new MyNode("ElseIf");
-//            int position = index;
-
-//            if (!Sign(node, "else"))
+//                throwErr("while循环中缺少语句");
 //                return windBack(position);
 
-//            if (!Sentence(node))
-//            {
-//                //报错
-//                throwErr("ConsitionSentence：else分支中缺少语句");
-//                return windBack(position);
 //            }
 
 //            uppernode.AddNode(node);//uppernode.nodes.Add(node);
 //            return true;
-//        }
-
-
-
-
-//        //循环语句
-//        bool LoopSentence(MyNode uppernode)
-//        {//<循环语句>->while(<逻辑表达式>)<语句>
-
-//            MyNode node = new MyNode("循环语句");
-//            int position = index;
-
-//            switch(peek())
-//            {
-//                case "while":
-//                    if (!Sign(node, "while"))
-//                        return windBack(position);
-//                    if (!Sign(node, "("))
-//                    {
-//                        throwErr("while循环中缺少(");
-//                        return windBack(position);
-//                    }
-//                    if (!LogicExpression(node))
-//                    {
-//                        throwErr("while循环中缺少语句");
-
-//                        return windBack(position);
-//                    }
-//                    if (!Sign(node, ")"))
-//                    {
-//                        throwErr("while循环中缺少)");
-//                        return windBack(position);
-//                    }
-//                    if (!Sentence(node))
-//                    {
-//                        throwErr("while循环中缺少语句");
-//                        return windBack(position);
-
-//                    }
-
-//                    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                    return true;
-//                case "for":
-//                    if (!Sign(node, "for"))
-//                        return windBack(position);
-//                    if (!Sign(node, "("))
-//                    {
-//                        throwErr("for循环中缺少(");
-//                        return windBack(position);
-//                    }
-//                    int subposition = index;
-//                    if (!DeclarationSentence(node))
-//                    {
-//                        windBack(subposition);
-//                        if(!AssignmentSentence(node))
-//                        {
-//                            windBack(subposition);
-                            
-//                        }
-//                    }
-//                    subposition = index;
-
-//                    if(!Sign(node,";"))
-//                    {
-//                        throwErr("for语句中缺少;");
-//                        return windBack(position);
-//                    }
-//                    subposition = index;
-//                    if(!LogicExpression(node))
-//                    {
-//                        throwErr("for语句缺少逻辑表达式");
-//                        return windBack(position);
-//                    }
-//                    subposition = index;
-//                    if(!Sign(node,";"))
-//                    {
-//                        throwErr("for语句缺少;");
-//                        return windBack(position);
-
-//                    }
-//                    subposition = index;
-//                    if(!PlusMinus(node))
-//                    {
-//                        windBack(subposition);
-//                        if(!AssignmentSentence(node))
-//                        {//第三部分可以为空
-//                            windBack(subposition);
-//                        }
-//                    }
-
-//                    if(!Sign(node,")"))
-//                    {
-//                        throwErr("for循环中缺少)");
-//                        return windBack(position);
-//                    }
-//                    if(!Sentence(node))
-//                    {
-//                        throwErr("循环控制中缺少语句");
-//                        return windBack(position);
-//                    }
-
-//                    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                    return true;
-//                default:
-//                    return false;
-                    
-//            }
-            
-//        }
-
-
-//        //表达式
-//        bool Expression(MyNode uppernode)
-//        {//< 表达式 > ->< 声明语句 >|<函数调用>|< 赋值语句 >|<自增减>
-//            MyNode node = new MyNode("表达式");
-//            int position = index;
-//            if (DeclarationSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            windBack(position);
-//            if (PlusMinus(node))
-//            {
-//                uppernode.AddNode(node);
-//                return true;
-//            }
-//            windBack(position);
-//            if (Return(node))
-//            {
-//                uppernode.AddNode(node);
-//                return true;
-//            }
-//            windBack(position);
-//            if (BreakContinue(node))
-//            {
-//                uppernode.AddNode(node);
-//                return true;
-//            }
-//            // throwErr("Expression：表达式中缺少声明语句或赋值语句");
-
-//            windBack(position);
-//            if (FunctionCall(node))
-//            {
-//                uppernode.AddNode(node);
-//                return true;
-//            }windBack(position);
-//            if (AssignmentSentence(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-            
-//            return windBack(position);
-
-//        }
-
-
-//        //声明语句
-//        bool DeclarationSentence(MyNode uppernode)
-//        {//<声明语句>-><类型><赋值语句>
-//            MyNode node = new MyNode("声明语句");
-//            int position = index;
-//            if (!Type(node))
+//        case "for":
+//            if (!Sign(node, "for"))
 //                return windBack(position);
-
-//            int subposition = index;
-//            if(!DeclarationSentence2(node))
+//            if (!Sign(node, "("))
 //            {
-//                throwErr("声明语句缺少右部变量");
-//                return windBack(position);
-//            }
-//            uppernode.AddNode(node);
-//            return true;
-           
-//        }
-
-//        bool DeclarationSentence2(MyNode uppernode)
-//        {//<声明语句2>		-><声明语句3>,<声明语句2>|<声明语句3>
-
-//            MyNode node = new MyNode("声明语句2");
-//            int position = index;
-//            if(!DeclarationSentence3(node))
-//            {
+//                throwErr("for循环中缺少(");
 //                return windBack(position);
 //            }
 //            int subposition = index;
-//            if(Sign(node,","))
+//            if (!DeclarationSentence(node))
 //            {
-//                if(!DeclarationSentence2(node))
-//                {
-
-//                    throwErr("声明语句,后缺少声明");
-//                    return windBack(position);
-//                }
-//                uppernode.AddNode(node);
-//                return true;
-//            }
-//            windBack(subposition);
-//            uppernode.AddNode(node);
-//            return true;
-//        }
-
-//         bool DeclarationSentence3(MyNode uppernode)
-//        {//<声明语句3>		-><数组>=<数组赋值>|<数组>|<赋值语句>|<标志符>
-
-//            MyNode node = new MyNode("声明语句3");
-//            int position = index;
-//            int subposition = index;
-//            if (Array(node))
-//            {
-//                if (Sign(node, "="))
-//                {
-//                    if (ArrayAssignment(node))
-//                    {
-//                        uppernode.AddNode(node);
-//                        return true;
-//                    }
-//                    throwErr("数组声明缺少右部");
-//                    return windBack(position);
-//                }
-//                windBack(index - 1);
-//                uppernode.AddNode(node);
-//                return true;
-//            }
-//            windBack(subposition);
-//            if (!AssignmentSentence(node))
-//            {
-//                //int subposition = index;
-
-//                //if(Array(node))
-//                //{
-//                //    uppernode.AddNode(node);
-//                //    return true;
-//                //}
 //                windBack(subposition);
-
-//                if (Marker(node))
+//                if (!AssignmentSentence(node))
 //                {
-//                    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                    return true;
-//                }// throwErr("DeclarationSentence：声明语句中缺少赋值语句");
-//                throwErr("DeclarationSentence：声明语句中缺少变量名");
+//                    windBack(subposition);
+
+//                }
+//            }
+//            subposition = index;
+
+//            if (!Sign(node, ";"))
+//            {
+//                throwErr("for语句中缺少;");
+//                return windBack(position);
+//            }
+//            subposition = index;
+//            if (!LogicExpression(node))
+//            {
+//                throwErr("for语句缺少逻辑表达式");
+//                return windBack(position);
+//            }
+//            subposition = index;
+//            if (!Sign(node, ";"))
+//            {
+//                throwErr("for语句缺少;");
+//                return windBack(position);
+
+//            }
+//            subposition = index;
+//            if (!PlusMinus(node))
+//            {
+//                windBack(subposition);
+//                if (!AssignmentSentence(node))
+//                {//第三部分可以为空
+//                    windBack(subposition);
+//                }
+//            }
+
+//            if (!Sign(node, ")"))
+//            {
+//                throwErr("for循环中缺少)");
+//                return windBack(position);
+//            }
+//            if (!Sentence(node))
+//            {
+//                throwErr("循环控制中缺少语句");
 //                return windBack(position);
 //            }
 
 //            uppernode.AddNode(node);//uppernode.nodes.Add(node);
 //            return true;
-//        }
+//        default:
+//            return false;
 
-//        //赋值语句
-//        bool AssignmentSentence(MyNode uppernode)
-//        {/*<赋值语句>-><标志符> = <赋值语句>xxxxx
+//    }
+
+//}
+
+
+////表达式
+//bool Expression(MyNode uppernode)
+//{//< 表达式 > ->< 声明语句 >|<函数调用>|< 赋值语句 >|<自增减>
+//    MyNode node = new MyNode("表达式");
+//    int position = index;
+//    if (DeclarationSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    windBack(position);
+//    if (PlusMinus(node))
+//    {
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    windBack(position);
+//    if (Return(node))
+//    {
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    windBack(position);
+//    if (BreakContinue(node))
+//    {
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    // throwErr("Expression：表达式中缺少声明语句或赋值语句");
+
+//    windBack(position);
+//    if (FunctionCall(node))
+//    {
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    windBack(position);
+//    if (AssignmentSentence(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+
+//    return windBack(position);
+
+//}
+
+
+////声明语句
+//bool DeclarationSentence(MyNode uppernode)
+//{//<声明语句>-><类型><赋值语句>
+//    MyNode node = new MyNode("声明语句");
+//    int position = index;
+//    if (!Type(node))
+//        return windBack(position);
+
+//    int subposition = index;
+//    if (!DeclarationSentence2(node))
+//    {
+//        throwErr("声明语句缺少右部变量");
+//        return windBack(position);
+//    }
+//    uppernode.AddNode(node);
+//    return true;
+
+//}
+
+//bool DeclarationSentence2(MyNode uppernode)
+//{//<声明语句2>		-><声明语句3>,<声明语句2>|<声明语句3>
+
+//    MyNode node = new MyNode("声明语句2");
+//    int position = index;
+//    if (!DeclarationSentence3(node))
+//    {
+//        return windBack(position);
+//    }
+//    int subposition = index;
+//    if (Sign(node, ","))
+//    {
+//        if (!DeclarationSentence2(node))
+//        {
+
+//            throwErr("声明语句,后缺少声明");
+//            return windBack(position);
+//        }
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    windBack(subposition);
+//    uppernode.AddNode(node);
+//    return true;
+//}
+
+//bool DeclarationSentence3(MyNode uppernode)
+//{//<声明语句3>		-><数组>=<数组赋值>|<数组>|<赋值语句>|<标志符>
+
+//    MyNode node = new MyNode("声明语句3");
+//    int position = index;
+//    int subposition = index;
+//    if (Array(node))
+//    {
+//        if (Sign(node, "="))
+//        {
+//            if (ArrayAssignment(node))
+//            {
+//                uppernode.AddNode(node);
+//                return true;
+//            }
+//            throwErr("数组声明缺少右部");
+//            return windBack(position);
+//        }
+//        windBack(index - 1);
+//        uppernode.AddNode(node);
+//        return true;
+//    }
+//    windBack(subposition);
+//    if (!AssignmentSentence(node))
+//    {
+//        //int subposition = index;
+
+//        //if(Array(node))
+//        //{
+//        //    uppernode.AddNode(node);
+//        //    return true;
+//        //}
+//        windBack(subposition);
+
+//        if (Marker(node))
+//        {
+//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//            return true;
+//        }// throwErr("DeclarationSentence：声明语句中缺少赋值语句");
+//        throwErr("DeclarationSentence：声明语句中缺少变量名");
+//        return windBack(position);
+//    }
+
+//    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    return true;
+//}
+
+////赋值语句
+//bool AssignmentSentence(MyNode uppernode)
+//{/*<赋值语句>-><标志符> = <赋值语句>xxxxx
 //                        |<标志符> =<标志符>xxxxx
 //                        |<标志符> = <算术表达式>
 //                        |<标志符> = <逻辑表达式>
 //                        |<标识符> = <自增减>
 //                        |<标志符> = <常数>xxxxx*/
 
-//MyNode node = new MyNode("赋值语句");
-//int position = index;
-//int subposition;
+//    MyNode node = new MyNode("赋值语句");
+//    int position = index;
+//    int subposition;
 
 
-//            if(!Array(node))
-//            {
-//                windBack(position);
-//                if(!Marker(node))
-//                {
-//                    return windBack(position);
-//                }
-//            }
-//            if (!Sign(node, "="))
-//            {
-//                //赋值语句中缺少 = 
-//                //当当前符号是自增减符号时
-//                if (token == "++" || token == "--")
-//                    return windBack(position);
-//               // throwErr("赋值语句中缺少 = ");
-//                return windBack(position);
-//            }
-//            subposition = index;
-//            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!暂时取消多变量赋值
-//            //if (AssignmentSentence(node))
-//            //{
-//            //    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            //    return true;
-//            //}
-//            //else windBack(subposition);
-
-//            //if (Marker(node))
-//            //{
-//            //    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//            //    return true;
-//            //}
-//            //else windBack(subposition);
-
-//            if (MathematicExpression(node, false))
-//            {//初始的算术表达式不用翻转加减法以及乘除号
-//                int temp = tokeninfos[index].type;
-//                if(temp == 11 + form.signAddress
-//                        || temp == 12 + form.signAddress
-//                        || (temp <= 17 + form.signAddress && temp >= 14 + form.signAddress)
-//                        || temp == 23 + form.signAddress
-//                        || temp == 24 + form.signAddress)
-//                {//`````
-//                    windBack(subposition);
-//                }
-//                //else if (token == "++" || token == "--")
-//                //{
-//                //    windBack(subposition);
-//                //}
-//                else
-//                {
-//                    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                    return true;
-//                }
-//            }
-//            else windBack(subposition);
-
-//            if(PlusMinus(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(subposition);
-
-//            if (LogicExpression(node))
-//            {
-//                uppernode.AddNode(node);//uppernode.nodes.Add(node);
-//                return true;
-//            }
-//            else windBack(subposition);
-
-////if (Constant(node))
-////{
-////    uppernode.AddNode(node);//uppernode.nodes.Add(node);
-////    return true;
-////}
-////else windBack(subposition);
-//throwErr("AssignmentSentence：赋值语句缺少右部");
-//            return false;
+//    if (!Array(node))
+//    {
+//        windBack(position);
+//        if (!Marker(node))
+//        {
+//            return windBack(position);
 //        }
+//    }
+//    if (!Sign(node, "="))
+//    {
+//        //赋值语句中缺少 = 
+//        //当当前符号是自增减符号时
+//        if (token == "++" || token == "--")
+//            return windBack(position);
+//        // throwErr("赋值语句中缺少 = ");
+//        return windBack(position);
+//    }
+//    subposition = index;
+//    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!暂时取消多变量赋值
+//    //if (AssignmentSentence(node))
+//    //{
+//    //    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    //    return true;
+//    //}
+//    //else windBack(subposition);
+
+//    //if (Marker(node))
+//    //{
+//    //    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    //    return true;
+//    //}
+//    //else windBack(subposition);
+
+//    if (MathematicExpression(node, false))
+//    {//初始的算术表达式不用翻转加减法以及乘除号
+//        int temp = tokeninfos[index].type;
+//        if (temp == 11 + form.signAddress
+//                || temp == 12 + form.signAddress
+//                || (temp <= 17 + form.signAddress && temp >= 14 + form.signAddress)
+//                || temp == 23 + form.signAddress
+//                || temp == 24 + form.signAddress)
+//        {//`````
+//            windBack(subposition);
+//        }
+//        //else if (token == "++" || token == "--")
+//        //{
+//        //    windBack(subposition);
+//        //}
+//        else
+//        {
+//            uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//            return true;
+//        }
+//    }
+//    else windBack(subposition);
+
+//    if (PlusMinus(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(subposition);
+
+//    if (LogicExpression(node))
+//    {
+//        uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//        return true;
+//    }
+//    else windBack(subposition);
+
+//    //if (Constant(node))
+//    //{
+//    //    uppernode.AddNode(node);//uppernode.nodes.Add(node);
+//    //    return true;
+//    //}
+//    //else windBack(subposition);
+//    throwErr("AssignmentSentence：赋值语句缺少右部");
+//    return false;
+//}
 
 
-//        //数组赋值
-//        bool ArrayAssignment(MyNode uppernode)
+////数组赋值
+//bool ArrayAssignment(MyNode uppernode)
 //{
 //    MyNode node = new MyNode("数组赋值");
 //    int position = index;

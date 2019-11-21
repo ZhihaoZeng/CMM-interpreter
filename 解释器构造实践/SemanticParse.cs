@@ -264,7 +264,11 @@ namespace 解释器构造实践
                 return throwErr("语句列表中语义错误", node);
             }
             //break 或者continue 或者 return 直接返回,到了循环中判断
-            if (breakcontinuereturn > 0 ) return true;
+            if (breakcontinuereturn > 0 && loopnumber > 0)
+            {
+                loopnumber--;
+                return true;
+            }
             //判断后继的语句列表
             if (node.nodes.Count > 1)
             {
@@ -410,7 +414,7 @@ namespace 解释器构造实践
                     {//执行循环语句
                         print("进入循环", no, no, no, no, no);
                         breakcontinuereturn = 0;
-                        if (!Sentence(node.nodes[8], ref breakcontinuereturn))
+                        if (!Sentence(node.nodes[8+i], ref breakcontinuereturn))
                             return throwErr("for中语句语义错误", node);
                         if (breakcontinuereturn == BREAK) break;
                         if (breakcontinuereturn == RETURN) return true;
@@ -484,13 +488,16 @@ namespace 解释器构造实践
                     if (arraycountsign.type != "int")
                         return throwErr("数组下标只可以为整型", node);
                     sign.arraycount = arraycountsign.getIntValue();
+                    for(int i =0;i<arraycountsign.getIntValue();i++)
+                    {
+                        sign.array.Add(0);
+                    }
 
                     if (node.nodes.Count == 3)
                     {//有数组赋值
                         if (!ArrayAssignment(node.nodes[2], sign,signtype))
                             return throwErr("数组赋值语义错误", node);
                     }
-
                     break;
                 case "赋值语句":
                     //先将标志符加入到符号表中，再进入赋值语句
@@ -520,7 +527,6 @@ namespace 解释器构造实践
                         return throwErr("声明语句中标志符重名", node);
                     }
                     break;
-
             }
             return true;
         }
@@ -627,7 +633,6 @@ namespace 解释器构造实践
                 else
                     lastresult.setValue((nextresult1 || subsign.getBoolValue()).ToString());
                 print("逻辑表达式", nextresult1.ToString(), "||", nextresult2.ToString(), equal, lastresult.value);
-
             }
             else
             {
@@ -696,15 +701,17 @@ namespace 解释器构造实践
                         return throwErr("FACTOR中右部算术表达式语义错误", node);
                     if (leftsign.type != rightsign.type)
                     {
-                        if(leftsign.type!="bool"&& rightsign.type != "bool")
+                        if (leftsign.type != "bool" && rightsign.type != "bool")
                         {
-                            leftsign.type = rightsign.type ="float";
+                            leftsign.type = rightsign.type = "float";
+                        }
+                        else
+                        {
+                            return throwErr("左右类型不可比较", node);
                         }
                     }
-                    else
-                    {
                         lastresult = compare(leftsign.value, rightsign.value, node.nodes[1].gettoken(), leftsign.type);
-                    }
+                    
                    // return throwErr("逻辑算符左右两式类型不同", node,true);
                     print("逻辑运算", leftsign.value, node.nodes[1].gettoken(), rightsign.value, equal, lastresult.ToString());
                     return true;
@@ -712,8 +719,28 @@ namespace 解释器构造实践
                 else
                 {
                     if (leftsign.type != "bool")
-                        return throwErr("FACTOR中单独算术表达式的类型错误", node, true);
-                    lastresult = leftsign.getBoolValue();
+                    {
+                        if (leftsign.type == "int")
+                        {
+                            int boolint = leftsign.getIntValue();
+                            if (boolint > 0)
+                                lastresult = true;
+                            else
+                                lastresult = false;
+                        }
+                        else if(leftsign.type == "float")
+                        {
+                            float floatint = leftsign.getFloatValue();
+                            if (floatint > 0)
+                                lastresult = true;
+                            else
+                                lastresult = false;
+                        }
+                        else
+                            return throwErr("FACTOR中单独算术表达式的类型错误", node, true);
+                    }
+                    else 
+                        lastresult = leftsign.getBoolValue();
                     print("FACTOR", lastresult.ToString(), no, no, equal, lastresult.ToString());
                     return true;
                 }
@@ -723,33 +750,39 @@ namespace 解释器构造实践
 
         public bool compare(String a, String b, String operation, String type)
         {
-            if(type == "int")
+            if (type == "int")
+            {
+                int aint = Convert.ToInt32(a), bint = Convert.ToInt32(b);
                 switch (operation)
                 {
                     case "<":
-                        return Convert.ToInt32(a) < Convert.ToInt32(b);
+                        return (aint < bint);
                     case ">":
-                        return Convert.ToInt32(a) > Convert.ToInt32(b);
+                        return (aint > bint);
                     case "==":
-                        return Convert.ToInt32(a) == Convert.ToInt32(b);
+                        return (aint == bint);
                     case "<>":
+                        return (aint == bint);
                     case "!=":
-                        return Convert.ToInt32(a) != Convert.ToInt32(b);
+                        return (aint != bint);
                     case ">=":
-                        return Convert.ToInt32(a) >= Convert.ToInt32(b);
+                        return (aint >= bint);
                     case "<=":
-                        return Convert.ToInt32(a) <= Convert.ToInt32(b);
+                        return (aint <= bint);
                 }
+            }
+              
             else if(type == "float")
                 switch (operation)
                 {
                     case "<":
-                        return Convert.ToInt32(a) < Convert.ToInt32(b);
+                        return Convert.ToSingle(a) < Convert.ToSingle(b);
                     case ">":
-                        return Convert.ToInt32(a) > Convert.ToInt32(b);
+                        return Convert.ToSingle(a) > Convert.ToSingle(b);
                     case "==":
                         return Convert.ToSingle(a) == Convert.ToSingle(b);
                     case "<>":
+                        return Convert.ToSingle(a) != Convert.ToSingle(b);
                     case "!=":
                         return Convert.ToSingle(a) != Convert.ToSingle(b);
                     case ">=":
@@ -775,7 +808,6 @@ namespace 解释器构造实践
             if(node.nodes[0].info == "数组")
             {
                 leftsign = toptable.findSign(node.nodes[0].nodes[0].nodes[0].gettoken());
-
                 if (leftsign == null)
                     return throwErr("不可对未定义变量赋值", node);
                 else
@@ -808,7 +840,32 @@ namespace 解释器构造实践
                             throwErr("", node.nodes[2], true);
                             return throwErr("赋值表达式右部无值", node);
                         case 3:
-                            return throwErr("赋值表达式左右类型不同", node, true);
+                            if (leftsign.type == "int")
+                            {
+                                if (rightsign.type == "float")
+                                {
+                                    rightsign.value = Convert.ToString((int)rightsign.getFloatValue()); 
+                                    rightsign.type = "int";
+                                    leftsign.setValue(rightsign, index);
+
+                                    return true;
+                                }
+                                return throwErr("赋值表达式左右类型不同", node, true);
+                            }
+                            else if (leftsign.type == "float")
+                            {
+                                if (rightsign.type == "int")
+                                {
+                                    leftsign.value = Convert.ToString((float)rightsign.getIntValue());
+                                    rightsign.type = "float";
+                                    leftsign.setValue(rightsign, index);
+
+                                    return true;
+                                }
+                                return throwErr("赋值表达式左右类型不同", node, true);
+                            }
+                            else
+                                return throwErr("赋值表达式左右类型不同", node, true);
                     }
 
                 }
@@ -848,7 +905,32 @@ namespace 解释器构造实践
                             throwErr("",node.nodes[2], true);
                             return throwErr("赋值表达式右部无值", node);
                         case 3:
-                            return throwErr("赋值表达式左右类型不同", node,true);
+                            if (leftsign.type == "int")
+                            {
+                                if (rightsign.type == "float")
+                                {
+                                    rightsign.value = Convert.ToString((int)rightsign.getFloatValue());
+                                    rightsign.type = "int";
+                                    leftsign.setValue(rightsign);
+
+                                    return true;
+                                }
+                                return throwErr("赋值表达式左右类型不同", node, true);
+                            }
+                            else if (leftsign.type == "float")
+                            {
+                                if (rightsign.type == "int")
+                                {
+                                    leftsign.value = Convert.ToString((float)rightsign.getIntValue());
+                                    rightsign.type = "float";
+                                    leftsign.setValue(rightsign);
+
+                                    return true;
+                                }
+                                return throwErr("赋值表达式左右类型不同", node, true);
+                            }
+                            else
+                                return throwErr("赋值表达式左右类型不同", node, true);
                     }
                 }
             }
@@ -867,7 +949,6 @@ namespace 解释器构造实践
             //递归计算左节点
             if (!Math2(node.nodes[0], ref nextsign1))
                 return throwErr("算术表达式语义错误", node);
-           
             if(node.nodes.Count==3)
             {
                 print("加减算符左部", no, no, no, equal, nextsign1.value);
@@ -913,7 +994,6 @@ namespace 解释器构造实践
                 lastsign = nextsign1;
                 lastsign.hasvalue = true;
                 print("Math1", nextsign1.value, no, no, equal, nextsign1.value);
-
             }
             return true;
         }
@@ -963,13 +1043,11 @@ namespace 解释器构造实践
                     {//fi
                         lastsign.type = "float";
                         lastsign.setValue(Convert.ToString(nextsign1.getFloatValue() * Math.Pow(nextsign2.getIntValue(), operation)));
-
                     }
                     else
                     {//ff
                         lastsign.type = "float";
                         lastsign.setValue(Convert.ToString(nextsign1.getFloatValue() * Math.Pow(nextsign2.getFloatValue(), operation)));
-
                     }
                 }
                 print("乘除运算", nextsign1.value, node.nodes[1].gettoken(), nextsign2.value, equal, lastsign.value);
@@ -1056,49 +1134,105 @@ namespace 解释器构造实践
             if (node.nodes.Count != 4)
                 return throwErr("函数调用缺少参数", node);
 
-            if (node.nodes[0].nodes[0].gettoken()=="print"|| node.nodes[0].nodes[0].gettoken() =="printf")
+            if (node.nodes[0].nodes[0].gettoken()=="print"|| node.nodes[0].nodes[0].gettoken() =="printf" || node.nodes[0].nodes[0].gettoken() == "write")
             {//打印函数
                 if (!MathematicExpression(node.nodes[2], ref sign))
                 {
                     if(!LogicExpression(node.nodes[2], ref sign))
-                        return throwErr("函数调用中参数语义错误", node, true);
+                        if(!Array(node.nodes[2],ref sign))
+                            return throwErr("函数调用中参数语义错误", node, true);
                 }
                 form.richTextBox3.Text += sign.value+"\n";
                 print("打印数据", no, no, no, no, sign.value);
                 return true;
             }
-            else if(node.nodes[0].nodes[0].gettoken() == "scanf"|| node.nodes[0].nodes[0].gettoken() =="sacn")
+            else if(node.nodes[0].nodes[0].gettoken() == "scanf"|| node.nodes[0].nodes[0].gettoken() =="scan" || node.nodes[0].nodes[0].gettoken() == "read")
             {//输入函数
+                MyNode mynode = node.nodes[2];
                 if (node.nodes[2].info=="算术表达式")
                 {
                     if (!MathematicExpression(node.nodes[2], ref sign))
                     {
                         if(!LogicExpression(node.nodes[2],ref sign))
-                            return throwErr("参数中标志符语义错误", node, true);
+                            if (!Array(node.nodes[2], ref sign))
+                                return throwErr("函数调用中参数语义错误", node, true);
                     }
                     Input inputform = new Input();
                     inputform.ShowDialog();
                     int start = node.nodes[2].stringindex;
+                    Sign assignsign = new Sign();
+                    assignsign = null;
                     String name = node.nodes[2].nodes[0].nodes[0].nodes[0].nodes[0].nodes[0].gettoken();
-                    if (/*sign.name*/name == null)
+                    if (/*sign.name*/name != null)
                     {
-                        return throwErr("只可读到标志符中", node, true);
+                        assignsign = toptable.findSign(/*sign.name*/name);
+                        String input = click.value;
+                        assignsign.setValue(input);
+                        try
+                        {
+                            switch (assignsign.type)
+                            {
+                                case "float":
+                                    assignsign.getFloatValue();
+                                    break;
+                                case "int":
+                                    assignsign.getIntValue();
+                                    break;
+                                case "bool":
+                                    assignsign.getBoolValue();
+                                    break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return throwErr("输入的数据类型错误", node, true);
+                        }
+                        print("读入数据", assignsign.name, no, no, no, input);
+                        return true;
                     }
-                    Sign assignsign = toptable.findSign(/*sign.name*/name);
+                    else if(node.nodes[2].nodes[0].nodes[0].nodes[0].nodes[0].info == "数组")
+                    {
+                        mynode = node.nodes[2].nodes[0].nodes[0].nodes[0].nodes[0];
+                    }
+                    else
+                        return throwErr("括号中变量错误", node, true);
+
+                }
+                if (mynode.info == "数组"/*node.nodes[2].info == "数组"*/)
+                {
+                    Sign backsign = new Sign(), arraysign = new Sign();
+                    int index = 0;
+                    Sign arrayindex = new Sign();
+                    arraysign = toptable.findSign(mynode.nodes[0].nodes[0].gettoken());
+                    if (arraysign == null)
+                        return throwErr("数组未定义", mynode);
+                    print("取数", arraysign.type + "[]", arraysign.name, no, no, no);
+                    if (!MathematicExpression(mynode.nodes[2], ref arrayindex))
+                        return throwErr("数组下标语义错误", mynode);
+                    if (arrayindex.type != "int")
+                        return throwErr("数组下标只可以是整型", mynode);
+                    index = arrayindex.getIntValue();
+                    print("数组下标", no, no, no, equal, index.ToString());
+                    if (index >= arraysign.array.Count)
+                        return throwErr("数组访问越界", mynode);
                     String input = click.value;
-                    assignsign.setValue(input);
+                    print("数组赋值", no, no, no, equal, input);
+                    arraysign.array[index] = input;
+                    backsign.setValue(arraysign.array[index].ToString());
+                    backsign.type = arraysign.type;
+
                     try
                     {
-                        switch(assignsign.type)
+                        switch (backsign.type)
                         {
                             case "float":
-                                assignsign.getFloatValue();
+                                backsign.getFloatValue();
                                 break;
                             case "int":
-                                assignsign.getIntValue();
+                                backsign.getIntValue();
                                 break;
                             case "bool":
-                                assignsign.getBoolValue();
+                                backsign.getBoolValue();
                                 break;
                         }
                     }
@@ -1106,12 +1240,7 @@ namespace 解释器构造实践
                     {
                         return throwErr("输入的数据类型错误", node, true);
                     }
-                    print("读入数据", assignsign.name, no, no, no, input);
                     return true;
-                }
-                else
-                {
-                    return throwErr("暂不支持直接读入数组", node, true);
                 }
             }
             else
@@ -1119,21 +1248,21 @@ namespace 解释器构造实践
                 return throwErr("非法调用函数", node);
             }
 
+            return true;
+            /* Sign sign = new Sign();
+             Function function;
+             function = findFunction(node.nodes[0].nodes[0].gettoken());
+             if (function == null)
+                 return throwErr("不可调用未定义的函数", node);
+             if (node.nodes.Count == 3)
+             {//无参数调用
+             }
+             else
+             {
+                 //有参数调用
 
-           /* Sign sign = new Sign();
-            Function function;
-            function = findFunction(node.nodes[0].nodes[0].gettoken());
-            if (function == null)
-                return throwErr("不可调用未定义的函数", node);
-            if (node.nodes.Count == 3)
-            {//无参数调用
-            }
-            else
-            {
-                //有参数调用
-
-            }
-            return true;*/
+             }
+             return true;*/
         }
 
         public Function findFunction(String functionname)
@@ -1170,13 +1299,12 @@ namespace 解释器构造实践
                 return throwErr("数组下标只可以是整型", node);
             index = arrayindex.getIntValue();
             print("数组下标", no, no, no, equal, index.ToString());
-            if (index >= arraysign.arraytop)
+            if (index >= arraysign.array.Count)
                 return throwErr("数组访问越界", node);
             backsign.setValue(arraysign.array[index].ToString());
             backsign.type = arraysign.type;
             lastsign = backsign;
             lastsign.hasvalue = true;
-
             print("数组取值", no, no, no, equal, backsign.value);
             return true;
         }
@@ -1245,7 +1373,7 @@ namespace 解释器构造实践
                         return throwErr("数组下标应该为整型", node);
                     print("数组下标", no, no, no, equal, indexsign.value);
                     arrayindex = indexsign.getIntValue();
-                    if (arrayindex >= sign.arraytop)
+                    if (arrayindex >= sign.array.Count)
                         return throwErr("数组访问越界", node);
                     //将值存入backsign返回
                     backsign.setValue(sign.array[arrayindex].ToString());
@@ -1279,7 +1407,7 @@ namespace 解释器构造实践
                             return throwErr("数组下标应该为整型", node);
                         arrayindex = indexsign.getIntValue();
                         print("数组下标", no, no, no, equal, indexsign.value);
-                        if (arrayindex >= sign.arraytop)
+                        if (arrayindex >= sign.array.Count)
                             return throwErr("数组访问越界", node);
                         if (node.nodes[1].gettoken() == "++")
                             sign.array[arrayindex] = Convert.ToInt32(sign.array[arrayindex]) + 1;

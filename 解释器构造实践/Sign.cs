@@ -82,24 +82,51 @@ namespace 解释器构造实践
             setValue(rightsign.value);
             return 1;
         }
+
+        public int forcedSetArrayValue(Sign rightsign, int index)
+        {
+            try
+            {
+                if (!rightsign.hasvalue)
+                {//右部未赋值
+                    return 2;
+                }
+                if (this.type == "int")
+                    this.array[index] = rightsign.getIntValue();
+                else if (this.type == "float")
+                    this.array[index] = rightsign.getFloatValue();
+                else if (this.type == "bool")
+                    this.array[index] = rightsign.getBoolValue();
+
+            }
+            catch (Exception e) { }
+            return 1;
+        }
+
+
+
         public int setValue(Sign rightsign, int index)
         {
-            if (this.type != rightsign.type)
-            {//类型不同
-                return 3;
-            }
-            if (!rightsign.hasvalue)
-            {//右部未赋值
-                return 2;
-            }
-            if (this.type == "int")
-                this.array[index] = rightsign.getIntValue();
-            else if (this.type == "float")
-                this.array[index] = rightsign.getFloatValue();
-            else if (this.type == "bool")
-                this.array[index] = rightsign.getBoolValue();
+            try
+            {
+                if (this.type != rightsign.type)
+                {//类型不同
+                    return 3;
+                }
+                if (!rightsign.hasvalue)
+                {//右部未赋值
+                    return 2;
+                }
+                if (this.type == "int")
+                    this.array[index] = rightsign.getIntValue();
+                else if (this.type == "float")
+                    this.array[index] = rightsign.getFloatValue();
+                else if (this.type == "bool")
+                    this.array[index] = rightsign.getBoolValue();
 
-            return 1;
+            } catch (Exception e) { }
+                return 1;
+
         }
         public void setValue(String value)
         {

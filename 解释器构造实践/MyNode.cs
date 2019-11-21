@@ -34,10 +34,7 @@ namespace 解释器构造实践
         public void settoken(String token, bool change)
         {
             this.token = token;
-
             settoken(token);
-            //if(change)
-            //treenode.Text = 
         }
         public void settoken(String token)
         {
