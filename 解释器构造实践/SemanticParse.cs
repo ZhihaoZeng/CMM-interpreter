@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+/*
+ * 软工五班 曾志昊 2017302580214
+ */
 namespace 解释器构造实践
 {
     delegate void deleexecute(MyNode node);
@@ -266,7 +268,7 @@ namespace 解释器构造实践
             //break 或者continue 或者 return 直接返回,到了循环中判断
             if (breakcontinuereturn > 0 && loopnumber > 0)
             {
-                loopnumber--;
+               // loopnumber--;
                 return true;
             }
             //判断后继的语句列表
@@ -345,16 +347,19 @@ namespace 解释器构造实践
          //< elseif >        -> else < 语句 > | 空
             if (node.info != "条件语句") return false;
             bool result = true;
+            bool condition = false;
             Sign resultsigh = new Sign();
             if(!LogicExpression(node.nodes[2], ref resultsigh))
             {
                 return throwErr("条件语句中逻辑表达式语义错误", node);
             }
-
-            if (resultsigh.getBoolValue())
+            condition = resultsigh.type == "bool" ? 
+                resultsigh.getBoolValue() : (resultsigh.type == "int" ? 
+                (resultsigh.getIntValue() > 0 ? true : false) : 
+                (resultsigh.getFloatValue() > 0 ? true : false));
+            if (condition)
             {
                 print("if", no, no, no, no, "true");
-
                 if (!Sentence(node.nodes[4], ref beakconreturn))
                     return throwErr("条件语句中语句语义错误", node);
                 if (beakconreturn>0)
@@ -362,13 +367,11 @@ namespace 解释器构造实践
             }
             else if (node.nodes.Count == 6)
             {
-               
                 if (!ElseIf(node.nodes[5], ref beakconreturn))
                     return throwErr("条件语句中else语义错误", node);
                 if (beakconreturn > 0)
                     return true;
             }
-
             return true;
         }
 
@@ -394,9 +397,11 @@ namespace 解释器构造实践
                             return throwErr("while中语句语义错误", node);
                         if (breakcontinuereturn == BREAK) break;
                         if (breakcontinuereturn == RETURN) return true;
+                       // if (breakcontinuereturn == CONTINUE) loopnumber++;
                         LogicExpression(node.nodes[2], ref resultsign);
                     }
                     loopnumber--;
+
                     return true;
                 case "for":
                     print("for", no, no, no, no, no);
@@ -418,13 +423,15 @@ namespace 解释器构造实践
                             return throwErr("for中语句语义错误", node);
                         if (breakcontinuereturn == BREAK) break;
                         if (breakcontinuereturn == RETURN) return true;
+                       // if (breakcontinuereturn == CONTINUE) loopnumber++;
                         if ((!PlusMinus(node.nodes[6+i], ref emptysign))&&(!AssignmentSentence(node.nodes[6+i])))
                             return throwErr("for中自增减或赋值表达式语义错误", node.nodes[6 + i]);
                         LogicExpression(node.nodes[4 + i], ref resultsign);
+                        
                     }
+                    loopnumber--;
                     toptable.signtop = regionsigntop;
                     toptable.table.RemoveRange(regionsigntop + 1, toptable.table.Count - 1 - regionsigntop);
-                    loopnumber--;
                     return true;
             }
             return true;
@@ -538,7 +545,7 @@ namespace 解释器构造实践
                 return throwErr("数组赋值中数组赋值2语义错误", node);            
             return true;
         }
-
+        int nowindex = 0;
         public bool ArrayAssignment2(MyNode node, Sign sign, int index,String type)
         {//< 数组赋值2 > ->< 算术表达式 >|< 算术表达式 >,< 数组赋值2 >|<逻辑表达式>|<逻辑表达式>,<数组赋值2>
             if (node.info != "数组赋值2") return false;
@@ -565,12 +572,20 @@ namespace 解释器构造实践
                     //float 和 int
                     if (!MathematicExpression(node.nodes[0], ref tempsign))
                         return throwErr("数组赋值中算术表达式语义错误", node);
-                    if (tempsign.type != type)
+                    //if (tempsign.type != type)
+                    //    return throwErr("数组赋值中算术表达式类型不符", node);
+                    if(tempsign.type == "bool")
                         return throwErr("数组赋值中算术表达式类型不符", node);
                     if (tempsign.type == "int")
-                        sign.addIntoArray(tempsign.getIntValue());
+                    {
+                        sign.array[nowindex] = tempsign.getIntValue();
+                        nowindex++;
+                    }
                     else
-                        sign.addIntoArray(tempsign.getFloatValue());
+                    {
+                        sign.array[nowindex] = tempsign.getFloatValue();
+                        nowindex++;
+                    }
                 }
                 else
                     return throwErr("数组赋值中类型不符", node);
@@ -580,6 +595,7 @@ namespace 解释器构造实践
                 if (!ArrayAssignment2(node.nodes[2], sign, index + 1,type))
                     return throwErr("数组赋值2中后继语句语义错误", node);
             }
+            nowindex--;
             return true;
         }
 
@@ -625,13 +641,20 @@ namespace 解释器构造实践
             lastresult.type = "bool";
             if (!AND(node.nodes[0],ref nextresult1))
                 return throwErr("逻辑表达式中AND语句语义错误", node);
-            if(node.nodes.Count == 3)
+            if (nextresult1)
+            {
+                lastresult.setValue("true");
+                print("逻辑表达式", nextresult1.ToString(), "||", nextresult2.ToString(), equal, lastresult.value);
+                return true;
+            }
+             
+            if (node.nodes.Count == 3)
             {
                 Sign subsign = new Sign();
                 if (!LogicExpression(node.nodes[2], ref subsign))
                     return throwErr("逻辑表达式中后继逻辑表达式语义错误", node);
                 else
-                    lastresult.setValue((nextresult1 || subsign.getBoolValue()).ToString());
+                    lastresult.setValue(subsign.getBoolValue().ToString());
                 print("逻辑表达式", nextresult1.ToString(), "||", nextresult2.ToString(), equal, lastresult.value);
             }
             else
@@ -649,13 +672,19 @@ namespace 解释器构造实践
             bool nextresult1 = false, nextresult2 = false;
             if (!FACTOR(node.nodes[0], ref nextresult1))
                 return throwErr("AND语句中FACTOR语义错误", node);
+            if(!nextresult1)
+            {
+                lastresult = false;
+                print("AND", nextresult1.ToString(), "&&", nextresult2.ToString(), equal, lastresult.ToString());
+                return true;
+
+            }
             if (node.nodes.Count == 3)
             {
                 if (!AND(node.nodes[2], ref nextresult2))
                     return throwErr("AND语句中后继AND语义错误", node);
-                lastresult = nextresult1 && nextresult2;
+                lastresult =  nextresult2;
                 print("AND", nextresult1.ToString(), "&&", nextresult2.ToString(), equal, lastresult.ToString());
-
             }
             else
             {
@@ -821,13 +850,23 @@ namespace 解释器构造实践
                         return throwErr("数组下标只可以是整型", node);
                     index = arrayindex.getIntValue();
                     print("数组下标", no, no, no, equal, arrayindex.value);
-                    if(leftsign.type == "bool")
+                    //if(leftsign.type == "bool")
+                    //{
+                    //    if(!LogicExpression(node.nodes[2], ref rightsign))
+                    //        return throwErr("赋值表达式右部算式表达式错误", node);
+                    //}
+                    //else if (!MathematicExpression(node.nodes[2], ref rightsign))
+                    //    return throwErr("赋值表达式右部算式表达式错误", node);
+                    try
                     {
-                        if(!LogicExpression(node.nodes[2], ref rightsign))
-                            return throwErr("赋值表达式右部算式表达式错误", node);
+                        if (!MathematicExpression(node.nodes[2], ref rightsign))
+                            if (!LogicExpression(node.nodes[2], ref rightsign))
+                                return throwErr("赋值表达式右部算式表达式错误", node);
                     }
-                    else if (!MathematicExpression(node.nodes[2], ref rightsign))
+                    catch (Exception e)
+                    {
                         return throwErr("赋值表达式右部算式表达式错误", node);
+                    }
 
                     print("等号右部", no, no, no, equal, rightsign.value);
                     switch (leftsign.setValue(rightsign,index))
@@ -844,10 +883,15 @@ namespace 解释器构造实践
                             {
                                 if (rightsign.type == "float")
                                 {
-                                    rightsign.value = Convert.ToString((int)rightsign.getFloatValue()); 
-                                    rightsign.type = "int";
-                                    leftsign.setValue(rightsign, index);
-
+                                    //rightsign.value = Convert.ToString((int)rightsign.getFloatValue()); 
+                                    //rightsign.type = "int";
+                                    //leftsign.setValue(rightsign, index);
+                                    leftsign.array[index] = (int)rightsign.getFloatValue();
+                                    return true;
+                                }
+                                else if(rightsign.type =="bool")
+                                {
+                                    leftsign.array[index] = rightsign.getBoolValue() ? 1 : 0;
                                     return true;
                                 }
                                 return throwErr("赋值表达式左右类型不同", node, true);
@@ -856,10 +900,16 @@ namespace 解释器构造实践
                             {
                                 if (rightsign.type == "int")
                                 {
-                                    leftsign.value = Convert.ToString((float)rightsign.getIntValue());
-                                    rightsign.type = "float";
-                                    leftsign.setValue(rightsign, index);
+                                    //leftsign.value = Convert.ToString((float)rightsign.getIntValue());
+                                    //rightsign.type = "float";
+                                    //leftsign.setValue(rightsign, index);
+                                    leftsign.array[index] = (float)rightsign.getIntValue();
 
+                                    return true;
+                                }
+                                else if (rightsign.type == "bool")
+                                {
+                                    leftsign.array[index] = rightsign.getBoolValue() ? 1 : 0;
                                     return true;
                                 }
                                 return throwErr("赋值表达式左右类型不同", node, true);
@@ -880,20 +930,40 @@ namespace 解释器构造实践
                 {
                     print("取数", leftsign.type, leftsign.name, no, no, leftsign.value);
 
-                    if (leftsign.type == "bool")
+                    //if (leftsign.type == "bool")
+                    //{
+                    //    try
+                    //    {
+                    //        if (!LogicExpression(node.nodes[2], ref rightsign))
+                    //            return throwErr("赋值表达式右部算式表达式错误", node);
+                    //    }
+                    //    catch(Exception e)
+                    //    {
+                    //        return throwErr("赋值表达式右部算式表达式错误", node);
+                    //    }
+                    //}
+                    //else if (!MathematicExpression(node.nodes[2], ref rightsign))
+                    //    return throwErr("赋值表达式右部算式表达式错误", node);
+
+                    //if(leftsign.type == "bool")
+                    //{
+                    //    if(!LogicExpression(node.nodes[2], ref rightsign))
+                    //        return throwErr("赋值表达式右部算式表达式错误", node);
+                    //}
+                    //else if (!MathematicExpression(node.nodes[2], ref rightsign))
+                    //    return throwErr("赋值表达式右部算式表达式错误", node);
+
+                    try
                     {
-                        try
-                        {
-                            if (!LogicExpression(node.nodes[2], ref rightsign))
-                                return throwErr("赋值表达式右部算式表达式错误", node);
-                        }
-                        catch(Exception e)
-                        {
+                        if (!MathematicExpression(node.nodes[2], ref rightsign))
+                        if (!LogicExpression(node.nodes[2], ref rightsign))
                             return throwErr("赋值表达式右部算式表达式错误", node);
-                        }
                     }
-                    else if (!MathematicExpression(node.nodes[2], ref rightsign))
+                    catch (Exception e)
+                    {
                         return throwErr("赋值表达式右部算式表达式错误", node);
+                    }
+
                     print("等号右部", no, no, no, equal, rightsign.value);
 
                     switch (leftsign.setValue(rightsign))
@@ -909,10 +979,17 @@ namespace 解释器构造实践
                             {
                                 if (rightsign.type == "float")
                                 {
-                                    rightsign.value = Convert.ToString((int)rightsign.getFloatValue());
-                                    rightsign.type = "int";
-                                    leftsign.setValue(rightsign);
-
+                                    //rightsign.value = Convert.ToString((int)rightsign.getFloatValue());
+                                    //rightsign.type = "int";
+                                    //leftsign.setValue(rightsign);
+                                    leftsign.value = Convert.ToString((int)rightsign.getFloatValue());
+                                    leftsign.hasvalue = true;
+                                    return true;
+                                }
+                                else if (rightsign.type == "bool")
+                                {
+                                    leftsign.value = Convert.ToString(rightsign.getBoolValue() ? 1 : 0);
+                                    leftsign.hasvalue = true;
                                     return true;
                                 }
                                 return throwErr("赋值表达式左右类型不同", node, true);
@@ -921,10 +998,17 @@ namespace 解释器构造实践
                             {
                                 if (rightsign.type == "int")
                                 {
-                                    leftsign.value = Convert.ToString((float)rightsign.getIntValue());
-                                    rightsign.type = "float";
-                                    leftsign.setValue(rightsign);
-
+                                    //leftsign.value = Convert.ToString((float)rightsign.getIntValue());
+                                    //rightsign.type = "float";
+                                    //leftsign.setValue(rightsign);
+                                    leftsign.value = Convert.ToString((int)rightsign.getFloatValue());
+                                    leftsign.hasvalue = true;
+                                    return true;
+                                }
+                                else if (rightsign.type == "bool")
+                                {
+                                    leftsign.value = Convert.ToString(rightsign.getBoolValue() ? 1 : 0);
+                                    leftsign.hasvalue = true;
                                     return true;
                                 }
                                 return throwErr("赋值表达式左右类型不同", node, true);
@@ -967,7 +1051,7 @@ namespace 解释器构造实践
                     if(nextsign2.type == "int")
                     {//ii
                         lastsign.type = "int";
-                        lastsign.setValue( Convert.ToString(nextsign1.getIntValue() + operation * nextsign2.getIntValue()));
+                        lastsign.setValue( Convert.ToString(Convert.ToInt32(nextsign1.getIntValue() + operation * nextsign2.getIntValue())));
                     }
                     else
                     {//if
@@ -1004,21 +1088,34 @@ namespace 解释器构造实践
             Sign nextsign1 = new Sign(), nextsign2 = new Sign();
             //递归计算左节点
             if (!Math3(node.nodes[0], ref nextsign1))
-                return throwErr("", node);
+                if(!LogicExpression(node.nodes[0],ref nextsign1))
+                    return throwErr("", node);
             if (node.nodes.Count == 3)
             {
                 print("乘除算符左部", no, no, no, equal, nextsign2.value);
                 //计算右节点
                 if (!Math2(node.nodes[2], ref nextsign2))
-                    return throwErr("算术表达式后继语句语义错误", node);
+                    if (!LogicExpression(node.nodes[0], ref nextsign1))
+                        return throwErr("算术表达式后继语句语义错误", node);
                 if (!nextsign2.hasvalue || !nextsign1.hasvalue) return throwErr("标志符未赋初值", node);
+
+                if (nextsign1.type == "bool")
+                {
+                    nextsign1.type = "int";
+                    nextsign1.value = nextsign1.value == "true" ? "1" : "0";
+                }
+                if (nextsign2.type == "bool")
+                {
+                    nextsign2.type = "int";
+                    nextsign2.value = nextsign1.value == "true" ? "1" : "0";
+                }
 
                 print("乘除算符右部", no, no, no, equal, nextsign2.value);
                 int operation = 1;
                 if (node.nodes[1].gettoken() == "/")
                 {
                     operation = -1;
-                    nextsign2.type = "float";
+                    //nextsign2.type = "float";
                     if(nextsign2.getFloatValue() == 0.0f)
                     {
                         return throwErr("除法右部不可以为0", node, true);
@@ -1029,7 +1126,7 @@ namespace 解释器构造实践
                     if (nextsign2.type == "int")
                     {//ii
                         lastsign.type = "int";
-                        lastsign.setValue(Convert.ToString(nextsign1.getIntValue() * Math.Pow(nextsign2.getIntValue(), operation)));
+                        lastsign.setValue(Convert.ToString(Convert.ToInt32(nextsign1.getIntValue() * Math.Pow(nextsign2.getIntValue(), operation))));
                     }
                     else
                     {//if
@@ -1057,7 +1154,7 @@ namespace 解释器构造实践
             {//单独的算术表达式3
                 lastsign = nextsign1;
                 lastsign.hasvalue = true;
-
+                bool a = true;
                 print("Math2", nextsign1.value, no, no, equal, nextsign1.value);
 
             }
@@ -1142,6 +1239,8 @@ namespace 解释器构造实践
                         if(!Array(node.nodes[2],ref sign))
                             return throwErr("函数调用中参数语义错误", node, true);
                 }
+                //if(sign.type == "float")
+                //    sign.value = ((decimal)sign.getFloatValue()).ToString();
                 form.richTextBox3.Text += sign.value+"\n";
                 print("打印数据", no, no, no, no, sign.value);
                 return true;

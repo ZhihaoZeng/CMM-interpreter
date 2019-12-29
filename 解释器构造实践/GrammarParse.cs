@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+/*
+ * 软工五班 曾志昊 2017302580214
+ */
 namespace 解释器构造实践
 {
     class GrammarParse
@@ -833,6 +835,8 @@ namespace 解释器构造实践
             //}
             //else windBack(subposition);
 
+            
+
             if (MathematicExpression(node, false))
             {//初始的算术表达式不用翻转加减法以及乘除号
                 int temp = tokeninfos[index].type;
@@ -843,6 +847,9 @@ namespace 解释器构造实践
                         || temp == 24 + form.signAddress)
                 {//`````
                     windBack(subposition);
+                    MyNode deletenode = node.nodes.FindLast(t => t.info == "算术表达式");
+                    node.nodes.Remove(deletenode);
+                    node.treenode.Nodes.Remove(deletenode.treenode);
                 }
                 //else if (token == "++" || token == "--")
                 //{
@@ -958,6 +965,7 @@ namespace 解释器构造实践
             }
 
         }
+
 
 
         //逻辑表达式

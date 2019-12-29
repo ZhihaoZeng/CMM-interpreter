@@ -10,17 +10,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Collections;
 /*
-注意出错时：
-token+=text[index];
-index++;
-type = -1;
-error = "1231231321";
-return type;
-
-*/
+ * 软工五班 曾志昊 2017302580214
+ */
 
 namespace 解释器构造实践
 {
+    //控件处理以及词法分析
     public partial class Form1 : Form
     {
         public bool clicked = false;
